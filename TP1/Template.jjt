@@ -124,6 +124,7 @@ TOKEN :
 	< SEMICOLON: ";" > |
 	< COMMA: "," > |
 	< #AND: "&&" > |
+	< DOT: "." > |
 	< #OR: "||" >
 	// À compléter au besoin
 }
@@ -136,7 +137,7 @@ TOKEN :
 	< #LETTER: ["a"-"z","A"-"Z","_"] > |
 	< #DIGIT: ["0"-"9"] > |
 	< INTEGER: ["1"-"9"] (["0"-"9"])* | "0" > |
-	< REAL: (<INTEGER>) > //TODO
+	< REAL: (<INTEGER>) <DOT> (<INTEGER>)? (["e", "E"] <PLUS> <INTEGER> )?> //TODO
 }
 
 
@@ -176,7 +177,8 @@ void Expr() #void : {}
 void BasicExpr() #void : {}
 {
 	LOOKAHEAD(2) Identifier() |
-	IntValue()
+	IntValue() |
+	RealValue()
 }
 
 
