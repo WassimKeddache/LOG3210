@@ -125,6 +125,7 @@ TOKEN :
 	< COMMA: "," > |
 	< #AND: "&&" > |
 	< DOT: "." > |
+	< SPACE: " " > |
 	< #OR: "||" >
 	// À compléter au besoin
 }
@@ -137,10 +138,8 @@ TOKEN :
 	< #LETTER: ["a"-"z","A"-"Z","_"] > |
 	< #DIGIT: ["0"-"9"] > |
 	< INTEGER: ["1"-"9"] (["0"-"9"])* | "0" > |
-	< REAL: (<INTEGER>) <DOT> (<INTEGER>)? (["e", "E"] <PLUS> <INTEGER> )?> //TODO
+	< REAL: (<INTEGER>)? <DOT> (<INTEGER>)? (["e", "E"] <PLUS> <INTEGER> )?>
 }
-
-
 
 
 //
@@ -157,10 +156,19 @@ void Block() #void : { }
 	 ( Stmt() )*
 }
 
+void Loop() #void : { }
+{
+	 WhileStmt() |
+	 DoWhileStmt() |
+	 ForStmt()
+}
 
 void Stmt() #void : { }
 {
-	AssignStmt() <SEMICOLON>
+	AssignStmt() <SEMICOLON> | // ecq on doit mettre semicolon partout?
+	Loop() |
+	IfStmt() |
+	FunctionStmt() // pas certain que c'est ici
 }
 
 void AssignStmt() : { Token t;}
@@ -198,3 +206,33 @@ void RealValue() : { Token t;}
 {
 	t = <REAL> {jjtThis.setValue(Double.parseDouble(t.image));}
 }
+
+void WhileStmt() : {}
+{
+    <WHILE> <LPAREN> Expr() <RPAREN> (<LACC> Block() <RACC> | Stmt())
+}
+
+void DoWhileStmt() : {}
+{
+    <DO> <LACC> Block() <RACC> <WHILE> <LPAREN> Expr() <RPAREN>
+}
+
+void IfStmt() : {} // Ici permet un if else if sans else, a voir si on vx ca ou non
+{
+    <IF> <LPAREN> Expr() <RPAREN> (<LACC> Block() <RACC>  (<ELSE> <SPACE> <IF> <LPAREN> Expr() <RPAREN> <LACC> Block() <RACC>)* (<ELSE> <LACC> Block() <RACC>)?|
+    Stmt())
+}
+
+void ForStmt() : {}
+{
+    <FOR> <LPAREN> (AssignStmt())? <SEMICOLON> (Expr())? <SEMICOLON> (AssignStmt())? <RPAREN> <LACC> Block() <RACC>
+}
+
+void FunctionStmt() : {}
+{
+    <FUNC> <SPACE> <IDENTIFIER> <LPAREN> ((<IDENTIFIER> <COMMA>)* <IDENTIFIER>)? <RPAREN> (<LACC> Block() <RACC> <RET> (Expr())?)+
+}
+
+
+
+
